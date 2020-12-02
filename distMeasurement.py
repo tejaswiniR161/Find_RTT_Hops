@@ -14,7 +14,8 @@ data="measurement for class project. questions to student txr177@case.edu or pro
 
 #payload=str(data+'a'*(1472-len(data))).encode('ascii')
 
-#payload = bytes(data + 'a'*(1472 - len(data)))
+#payload = bytes(data + 'a'*(1472 - len(data)),encoding="ascii")
+payload=bytes(data,encoding="ascii")
 
 def numberOfHops(serverIP):
     for i in range(1,maximumHops):
@@ -44,12 +45,13 @@ def pingServer(serverIP,currentTimeOut):
 
     try:
         #sending the payload to the server IP address
-        sender.sendto(b'measurement for class project. questions to student txr177@case.edu or professor mxr136@case.edu',(serverIP,port))
+        sender.sendto(payload,(serverIP,port))
 
         #receiving the response and limiting the responseLength as described in the question
         data,currentAddress=receiver.recvfrom(responseLength)
         #print("received data ",data)
         #print("received address ",currentAddress)
+        
     except socket.error:
         print("Something went wrong! ",socket.error)
     finally:
@@ -58,17 +60,6 @@ def pingServer(serverIP,currentTimeOut):
         receiver.close()
         #returning the current hop's IP to the calling function
     return(currentAddress[0])
-
-""" 
-def generateScatterPlot(x,y,labels):
-    for i in range(len(x)):
-        plt.plot(x[i], y[i], 'bo')
-        plt.text(x[i] * (1 + 0.05), y[i] * (1 + 0.05) , labels[i], fontsize=12)
-
-    plt.xlim((0, maximumHops))
-    plt.ylim((0, max(y)+4))
-    plt.show() 
-"""
 
 #declarign the coordinate value holders below, x and y list
 x=[]
