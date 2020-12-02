@@ -14,7 +14,8 @@ responseLength=1500
 data="measurement for class project. questions to student txr177@case.edu or professor mxr136@case.edu"
 
 #payload=str(data+'a'*(1472-len(data))).encode('ascii')
-payload = bytes(data + 'a'*(1472 - len(data)))
+
+#payload = bytes(data + 'a'*(1472 - len(data)))
 
 serverIP=socket.gethostbyname(serverDomain)
 print("address of the server = ",serverIP)
