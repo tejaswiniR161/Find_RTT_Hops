@@ -1,9 +1,21 @@
 import socket
 import time
+import matplotlib.pyplot as plt
 
 maximumHops=30
-port=33444
+port=33434
+timeOut=30
 serverDomain="google.com"
+
+#question expects maximum length of the response to be 1500 and the payload to be 1472 and UDP header to be 8 bytes
+responseLength=1500
+
+#message data to be sent as asked in the question
+data="measurement for class project. questions to student txr177@case.edu or professor mxr136@case.edu"
+
+#payload=str(data+'a'*(1472-len(data))).encode('ascii')
+payload = bytes(data + 'a'*(1472 - len(data)))
+
 serverIP=socket.gethostbyname(serverDomain)
 print("address of the server = ",serverIP)
 
@@ -27,8 +39,8 @@ def pingServer(serverIP,currentTimeOut,port):
 
     try:
 
-        sender.sendto(b'',(serverIP,port))
-        data,currentAddress=receiver.recvfrom(1024)
+        sender.sendto(payload,(serverIP,port))
+        data,currentAddress=receiver.recvfrom(responseLength)
         print("received data ",data)
         print("received address ",currentAddress)
     except socket.error:
@@ -38,4 +50,17 @@ def pingServer(serverIP,currentTimeOut,port):
         receiver.close()
     return(currentAddress[0])
 
-numberOfHops(serverIP)
+def generateScatterPlot():
+    x=[1,2,3]
+    y=[1,2,3]
+    labels=["tej","asw","ini"]
+    for i in range(len(x)):
+        plt.plot(x[i], y[i], 'bo')
+        plt.text(x[i] * (1 + 0.01), y[i] * (1 + 0.01) , labels[i], fontsize=12)
+
+    plt.xlim((0, 30))
+    plt.ylim((0, 30))
+    plt.show()
+
+generateScatterPlot()
+#numberOfHops(serverIP)
