@@ -117,7 +117,7 @@ for target in targets:
         elif ans[0]==4:
             print("Only the Ports match")
 
-        print("Received response length (inclusive of headers)= ",ans[3])
+        print("Received response length (inclusive of headers) = ",ans[3])
         x.append(ans[1])
         y.append(ans[2])
 
