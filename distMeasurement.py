@@ -46,19 +46,43 @@ def pingServer(serverIP,currentTimeOut):
         data,currentAddress=receiver.recvfrom(responseLength)
         #IP of the endpoint thats end the ICMP packet will be in the 0th index
         currentAddressIP=currentAddress[0] 
-
+        currentPort=struct.unpack("!H",data[50:52])[0]
+        print("currentPort = ",currentPort)
+        
+        #as described in the question, looking for IP match
         if currentAddressIP.find(serverIP)!=-1:
             #overwitting the end time variable with the current time stamp to calculate the RTT
             endTime=time.time()
             
             #based on the ttl in the icmp packet header, we can find the total number of hops the packet had to make
             #the number of hops left in the last icmp packet header
+            
             ttlFromResponse=struct.unpack("!B",data[36:37])[0]
+            
             #total hops made to reach the destination = the maximum number of hops specified in the program minus the number of hops pending in the last icm packet header
             hops=maximumHops-ttlFromResponse
             RTT=endTime-startTime
             receivedDataLength=len(data)
-            return([1,hops,RTT,receivedDataLength])
+            #changing the 1st element of the list to 2 so it can be easily identified in the caller
+            return([2,hops,RTT,receivedDataLength])
+
+        #as described in the question, looking for the ports to match
+        elif currentPort.find(port)!=-1:
+            #overwitting the end time variable with the current time stamp to calculate the RTT
+            endTime=time.time()
+            
+            #based on the ttl in the icmp packet header, we can find the total number of hops the packet had to make
+            #the number of hops left in the last icmp packet header
+            
+            ttlFromResponse=struct.unpack("!B",data[36:37])[0]
+            
+            #total hops made to reach the destination = the maximum number of hops specified in the program minus the number of hops pending in the last icm packet header
+            hops=maximumHops-ttlFromResponse
+            RTT=endTime-startTime
+            receivedDataLength=len(data)
+            #changing the 1st element of the list to 3 so it can be easily identified in the caller
+            return([3,hops,RTT,receivedDataLength])
+        
         
     except socket.error:
         print("Something went wrong! ",socket.error)
@@ -88,7 +112,11 @@ for target in targets:
         #printing the returned values and appending the RTT to x coordinates' list and hops to y coordinates' list respectively
         print("RTT =  ",ans[2])
         print("Hops = ",ans[1])
-        print("The address on the ICMP packet header was matched with the host address of the domain")
+        if(ans[0]==2):
+            print("The IP addresses matched")
+        elif ans[0]==3:
+            print("The ports matched")
+
         print("Received response length (inclusive of headers)= ",ans[3])
         x.append(ans[1])
         y.append(ans[2])
