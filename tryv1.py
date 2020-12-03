@@ -1,7 +1,5 @@
 import socket
 import time
-import select
-import struct
 import matplotlib.pyplot as plt
 
 #defining maximum hops before starting to ping the next server, the port as mentioned in the question 
@@ -19,6 +17,23 @@ data="measurement for class project. questions to student txr177@case.edu or pro
 #payload = bytes(data + 'a'*(1472 - len(data)),encoding="ascii")
 payload=bytes(data,encoding="ascii")
 
+def numberOfHops(serverIP):
+    for i in range(1,maximumHops):
+        print("pinging the server with current ttl = ",i)
+        #Initializing both start and the end time stamps to calculate the RTT, overwriting the end time after the response is recieved from the ping function
+        startTime=time.time()
+        endTime=time.time()
+        #calling the method ping Server defined below
+        currentAddress=pingServer(serverIP,i)
+
+        if currentAddress.find(serverIP)!=-1:
+            #when the current hop address is same as the server real IP address, changing the end time to the current time stamp
+            endTime=time.time()
+            print("reached the server already!")
+            #number of hops to be plotted on x axis and the RTT on the y axis as per the question
+            #sending x,y and the domain name
+            return([i,endTime-startTime,serverDomain])
+
 def pingServer(serverIP,currentTimeOut):
     #defining sender and receiver objects as recommeded in the question, using RAW Sockets
     sender=socket.socket(socket.AF_INET,socket.SOCK_DGRAM,socket.IPPROTO_UDP)
@@ -27,29 +42,13 @@ def pingServer(serverIP,currentTimeOut):
     receiver=socket.socket(socket.AF_INET,socket.SOCK_RAW,socket.IPPROTO_ICMP)
     #binding to the port
     receiver.bind(("",port))
-    endTime=time.time()
 
     try:
         #sending the payload to the server IP address
         sender.sendto(payload,(serverIP,port))
+
         #receiving the response and limiting the responseLength as described in the question
-        receivedData=select.select([receiver],[],[],currentTimeOut)
-        if receivedData[0]==[]:
-            return({"res":"timeOut"})
-
-        endTime=time.time()
         data,currentAddress=receiver.recvfrom(responseLength)
-        #IP of the endpoint thats end the ICMP packet will be in the 0th index
-        currentAddressIP=currentAddress[0] 
-        if currentAddressIP.find(serverIP)!=-1:
-            print("Destination responded before timeout")
-
-            print("data = ",data)
-            
-            ttlFromResponse=struct.unpack("!B",data[36:37])[0]
-            hops=maximumHops-ttlFromResponse
-            print("So hops = ? ",hops)
-            return({"res":"success"})
         #print("received data ",data)
         #print("received address ",currentAddress)
         
@@ -59,9 +58,8 @@ def pingServer(serverIP,currentTimeOut):
         #closing the sender and the receiver connections
         sender.close()
         receiver.close()
-
         #returning the current hop's IP to the calling function
-    #return(currentAddress[0])
+    return(currentAddress[0])
 
 #declarign the coordinate value holders below, x and y list
 x=[]
@@ -75,18 +73,15 @@ for target in targets:
     serverDomain=target.strip()
     serverIP=socket.gethostbyname(serverDomain)
     print("address of the server = ",serverIP)
-    ans=pingServer(serverIP,maximumHops)
 
-    #ans=numberOfHops(serverIP)
-"""
+    ans=numberOfHops(serverIP)
     x.append(ans[0])
     y.append(ans[1])
     labels.append(ans[2])
 
 plt.scatter(x, y)
 plt.show()
-plt.savefig("ScatterPlotForTargets.png") 
-"""
+plt.savefig("ScatterPlotForTargets.png")
 
 #print("received this from the funstion = ",ans)
 #list given and issues while pinging them 
