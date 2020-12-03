@@ -5,7 +5,7 @@ import struct
 import matplotlib.pyplot as plt
 
 #defining maximum hops before starting to ping the next server, the port as mentioned in the question 
-maximumHops=60
+maximumHops=40
 port=33434
 
 #question expects maximum length of the response to be 1500 and the payload to be 1472 and UDP header to be 8 bytes
@@ -88,6 +88,7 @@ for target in targets:
         #printing the returned values and appending the RTT to x coordinates' list and hops to y coordinates' list respectively
         print("RTT =  ",ans[2])
         print("Hops = ",ans[1])
+        print("The address on the ICMP packet header was matched with the host address of the domain")
         print("Received response length (inclusive of headers)= ",ans[3])
         x.append(ans[1])
         y.append(ans[2])
