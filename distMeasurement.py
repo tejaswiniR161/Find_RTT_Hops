@@ -46,42 +46,40 @@ def pingServer(serverIP,currentTimeOut):
         data,currentAddress=receiver.recvfrom(responseLength)
         #IP of the endpoint thats end the ICMP packet will be in the 0th index
         currentAddressIP=currentAddress[0] 
+        #as explained in the question, extracting the port number from the response packet header
         currentPort=struct.unpack("!H",data[50:52])[0]
-        print("currentPort = ",currentPort)
-        
-        #as described in the question, looking for IP match
-        if currentAddressIP.find(serverIP)!=-1:
-            #overwitting the end time variable with the current time stamp to calculate the RTT
-            endTime=time.time()
+        #print("currentPort = ",currentPort)
+
+        #overwitting the end time variable with the current time stamp to calculate the RTT
+        endTime=time.time()
             
-            #based on the ttl in the icmp packet header, we can find the total number of hops the packet had to make
-            #the number of hops left in the last icmp packet header
+        #based on the ttl in the icmp packet header, we can find the total number of hops the packet had to make
+        #the number of hops left in the last icmp packet header
             
-            ttlFromResponse=struct.unpack("!B",data[36:37])[0]
+        ttlFromResponse=struct.unpack("!B",data[36:37])[0]
             
-            #total hops made to reach the destination = the maximum number of hops specified in the program minus the number of hops pending in the last icm packet header
-            hops=maximumHops-ttlFromResponse
-            RTT=endTime-startTime
-            receivedDataLength=len(data)
+        #total hops made to reach the destination = the maximum number of hops specified in the program minus the number of hops pending in the last icm packet header
+        hops=maximumHops-ttlFromResponse
+        RTT=endTime-startTime
+        receivedDataLength=len(data)
+
+        #as described in the question, looking for IP match and port match
+        if currentAddressIP.find(serverIP)!=-1 and currentPort==port:
+            
             #changing the 1st element of the list to 2 so it can be easily identified in the caller
             return([2,hops,RTT,receivedDataLength])
 
-        #as described in the question, looking for the ports to match
-        elif currentPort.find(port)!=-1:
-            #overwitting the end time variable with the current time stamp to calculate the RTT
-            endTime=time.time()
+        #as described in the question, looking for the IPs to match
+        elif currentAddressIP.find(serverIP)!=-1:
             
-            #based on the ttl in the icmp packet header, we can find the total number of hops the packet had to make
-            #the number of hops left in the last icmp packet header
-            
-            ttlFromResponse=struct.unpack("!B",data[36:37])[0]
-            
-            #total hops made to reach the destination = the maximum number of hops specified in the program minus the number of hops pending in the last icm packet header
-            hops=maximumHops-ttlFromResponse
-            RTT=endTime-startTime
-            receivedDataLength=len(data)
             #changing the 1st element of the list to 3 so it can be easily identified in the caller
             return([3,hops,RTT,receivedDataLength])
+
+        #as described in the question, looking for the ports to match
+        elif currentPort==port:
+            
+            #changing the 1st element of the list to 4 so it can be easily identified in the caller
+            return([4,hops,RTT,receivedDataLength])
         
         
     except socket.error:
@@ -113,9 +111,11 @@ for target in targets:
         print("RTT =  ",ans[2])
         print("Hops = ",ans[1])
         if(ans[0]==2):
-            print("The IP addresses matched")
+            print("Both the IP Addresses and the Ports matched")
         elif ans[0]==3:
-            print("The ports matched")
+            print("Only the IP Addresses match")
+        elif ans[0]==4:
+            print("Only the Ports match")
 
         print("Received response length (inclusive of headers)= ",ans[3])
         x.append(ans[1])
